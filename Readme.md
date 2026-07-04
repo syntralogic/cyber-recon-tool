@@ -1,4 +1,4 @@
-# 🔍 Subdomain Recon + Admin Panel Finder v3.0
+# 🔍 Subdomain Recon + Admin Panel Finder
 
 A powerful Python-based reconnaissance tool for cybersecurity learning and authorized penetration testing.  
 It helps in discovering subdomains, detecting misconfigurations, analyzing HTTP responses, and finding exposed admin panels.

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 ╔══════════════════════════════════════════════════════════════╗
-║      SUBDOMAIN RECON + ADMIN PANEL FINDER  v3.0             ║
+║          SUBDOMAIN RECON + ADMIN PANEL FINDER                ║
 ║         Authorized Penetration Testing Only                 ║
 ╚══════════════════════════════════════════════════════════════╝
 """
@@ -114,7 +114,7 @@ def banner(domain=""):
     print(f"{BOLD}{C}   ██║  ██║███████╗╚██████╗╚██████╔╝██║ ╚████║{RST}")
     print(f"{BOLD}{C}   ╚═╝  ╚═╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝{RST}")
     print(f"{C}{'═'*62}{RST}")
-    print(f"{BOLD}{Y}   Subdomain Recon + Admin Panel Finder  v3.0{RST}")
+    print(f"{BOLD}{Y}   Subdomain Recon + Admin Panel Finder{RST}")
     print(f"{DIM}{W}   For Authorized Penetration Testing Only{RST}")
     print(f"{C}{'═'*62}{RST}")
     if domain:
