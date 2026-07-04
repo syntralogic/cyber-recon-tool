@@ -12,9 +12,11 @@ of the web service, so it survives restarts.
 """
 
 import os
+import time
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.exc import OperationalError
 
 db = SQLAlchemy()
 
@@ -58,8 +60,26 @@ def init_app(app):
     app.config["SQLALCHEMY_DATABASE_URI"] = _normalized_db_uri()
     app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True}
     db.init_app(app)
-    with app.app_context():
-        db.create_all()
+
+    attempts, delay = 5, 2
+    last_error = None
+    for attempt in range(1, attempts + 1):
+        try:
+            with app.app_context():
+                db.create_all()
+            return
+        except OperationalError as e:
+            last_error = e
+            app.logger.warning(
+                "Database not reachable yet (attempt %d/%d): %s", attempt, attempts, e
+            )
+            time.sleep(delay)
+    app.logger.error(
+        "Could not connect to the database after %d attempts. "
+        "Check that DATABASE_URL is set correctly (use the Internal Database URL "
+        "from your Render Postgres instance).", attempts
+    )
+    raise last_error
 
 
 # ── USERS ────────────────────────────────────────
