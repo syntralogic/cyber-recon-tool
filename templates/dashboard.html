@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}New Scan{% endblock %}
+{% block topbar_title %}New Scan{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-title">Target</div>
+  <div class="field-row">
+    <div class="field" style="flex:2;">
+      <label for="domainInput">Domain</label>
+      <input type="text" id="domainInput" placeholder="example.com" autocomplete="off" spellcheck="false">
+    </div>
+  </div>
+  <div class="checkbox-row">
+    <input type="checkbox" id="optAdmin" checked>
+    <label for="optAdmin">Also probe common admin / login paths</label>
+  </div>
+  <div class="actions-row">
+    <button class="btn btn-primary" id="scanBtn" type="button">Run scan</button>
+    <button class="btn btn-ghost" id="stopBtn" type="button" style="display:none;">Stop</button>
+    <button class="btn btn-ghost" id="exportBtn" type="button" style="display:none;">Export JSON</button>
+  </div>
+  <p style="font-size:12px;color:var(--text-faint);margin-top:14px;">
+    Only scan domains you own or have explicit written authorization to test.
+  </p>
+</div>
+
+<div class="stats-row" id="statsBar" style="display:none;">
+  <div class="stat-tile"><div class="stat-value" id="statSubs">0</div><div class="stat-label">Subdomains</div></div>
+  <div class="stat-tile"><div class="stat-value" id="statAdmins">0</div><div class="stat-label">Admin paths hit</div></div>
+  <div class="stat-tile"><div class="stat-value" id="statExposed">0</div><div class="stat-label">Exposed / private</div></div>
+  <div class="stat-tile"><div class="stat-value" id="statBypasses">0</div><div class="stat-label">CF bypass possible</div></div>
+</div>
+
+<div class="card" id="resultsCard" style="display:none;">
+  <div class="card-title">Scan console</div>
+
+  <div class="stepper">
+    <div class="step" id="step-sub"><span class="num">1</span> Subdomains</div>
+    <div class="step-line"></div>
+    <div class="step" id="step-mx"><span class="num">2</span> MX records</div>
+    <div class="step-line"></div>
+    <div class="step" id="step-admin"><span class="num">3</span> Admin paths</div>
+  </div>
+
+  <div class="log-feed" id="logFeed">
+    <div class="log-empty">Run a scan to see live results here.</div>
+  </div>
+</div>
+
+<div class="card" id="history">
+  <div class="card-title">Recent scans</div>
+  {% if history %}
+  <table class="table">
+    <thead>
+      <tr><th>Domain</th><th>Subdomains</th><th>Exposed</th><th>CF Bypass</th><th>When</th></tr>
+    </thead>
+    <tbody>
+      {% for h in history %}
+      <tr>
+        <td class="domain-cell">{{ h.domain }}</td>
+        <td>{{ h.subdomains_found }}</td>
+        <td>{{ h.exposed_found }}</td>
+        <td>{{ h.bypasses_found }}</td>
+        <td>{{ h.created_at[:16].replace('T', ' ') }} UTC</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="log-empty">No scans yet — your history will show up here.</div>
+  {% endif %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% endblock %}
