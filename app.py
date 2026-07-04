@@ -24,7 +24,7 @@ from flask_login import (
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 
-import db as dbmod
+import db
 
 try:
     import requests as req_lib
@@ -36,7 +36,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-me-in-render-env-vars")
 CORS(app, supports_credentials=True)
 
-dbmod.init_app(app)
+db.init_db()
 
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
@@ -45,16 +45,16 @@ login_manager.login_message_category = "info"
 
 
 class User(UserMixin):
-    def __init__(self, record):
-        self.id = record.id
-        self.username = record.username
-        self.email = record.email
+    def __init__(self, row):
+        self.id = row["id"]
+        self.username = row["username"]
+        self.email = row["email"]
 
 
 @login_manager.user_loader
 def load_user(user_id):
-    record = dbmod.get_user_by_id(user_id)
-    return User(record) if record else None
+    row = db.get_user_by_id(user_id)
+    return User(row) if row else None
 
 
 # ── CLOUDFLARE RANGES ───────────────────────────
@@ -211,10 +211,10 @@ def signup():
 
         if not error:
             pw_hash = generate_password_hash(password)
-            ok, err_msg = dbmod.create_user(username, email, pw_hash)
+            ok, err_msg = db.create_user(username, email, pw_hash)
             if ok:
-                record = dbmod.get_user_by_username(username)
-                login_user(User(record))
+                row = db.get_user_by_username(username)
+                login_user(User(row))
                 return redirect(url_for("index"))
             error = err_msg
 
@@ -231,10 +231,10 @@ def login():
     if request.method == "POST":
         username = (request.form.get("username") or "").strip()
         password = request.form.get("password") or ""
-        record = dbmod.get_user_by_username(username)
+        row = db.get_user_by_username(username)
 
-        if record and check_password_hash(record.password_hash, password):
-            login_user(User(record), remember=True)
+        if row and check_password_hash(row["password_hash"], password):
+            login_user(User(row), remember=True)
             next_page = request.args.get("next")
             return redirect(next_page or url_for("index"))
 
@@ -254,7 +254,7 @@ def logout():
 @app.route("/")
 @login_required
 def index():
-    history = dbmod.get_history(current_user.id, limit=10)
+    history = db.get_history(current_user.id, limit=10)
     return render_template("dashboard.html", history=history)
 
 
@@ -309,7 +309,7 @@ def scan():
 
         # ── Save to history ──
         try:
-            dbmod.save_scan(user_id, domain, len(found), len(exposed_list), len(bypasses))
+            db.save_scan(user_id, domain, len(found), len(exposed_list), len(bypasses))
         except Exception:
             pass
 
@@ -338,15 +338,8 @@ def dns_lookup():
 @app.route("/api/history")
 @login_required
 def history():
-    rows = dbmod.get_history(current_user.id, limit=25)
-    return jsonify([{
-        "id": r.id,
-        "domain": r.domain,
-        "subdomains_found": r.subdomains_found,
-        "exposed_found": r.exposed_found,
-        "bypasses_found": r.bypasses_found,
-        "created_at": r.created_at.isoformat(),
-    } for r in rows])
+    rows = db.get_history(current_user.id, limit=25)
+    return jsonify([dict(r) for r in rows])
 
 
 if __name__ == "__main__":

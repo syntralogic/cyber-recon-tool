@@ -63,7 +63,7 @@
         <td>{{ h.subdomains_found }}</td>
         <td>{{ h.exposed_found }}</td>
         <td>{{ h.bypasses_found }}</td>
-        <td>{{ h.created_at.strftime('%Y-%m-%d %H:%M') }} UTC</td>
+        <td>{{ h.created_at[:16].replace('T', ' ') }} UTC</td>
       </tr>
       {% endfor %}
     </tbody>
